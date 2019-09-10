@@ -33,11 +33,20 @@ static void get_environ_value(char* arg, char* value, int idx) {
 static void set_environ_vars(char** eargv, int eargc) {
 
 	// Your code here
-    int idx = block_contains(*eargv,'=');
-    char *key, *value;
-    get_environ_key(*eargv,key);
-    get_environ_value(*eargv,value,idx);
-    setenv(key,value,0);
+	int idx;
+	char *key, *value;
+	for(int i=0;i<eargc;i++)
+    {
+        idx = block_contains(eargv[i],'=');
+        key = (char*)malloc(i);
+        value = (char*)malloc(strlen(eargv)-i-1);
+        get_environ_key(eargv[i],key);
+        get_environ_value(eargv[i],value,idx);
+        setenv(key,value,0);
+        free(key);
+        free(value);
+    }
+    //
 }
 
 // opens the file in which the stdin/stdout or
@@ -74,15 +83,17 @@ void exec_cmd(struct cmd* cmd) {
 
 
 		case EXEC:
+
 			// spawns a command
 			//
 			// Your code here
 			e = (struct execcmd*)cmd;
-			set_environ_vars(e->eargv,e->argc);
+			if(e->eargc > 0)
+                set_environ_vars(e->eargv,e->eargc);
+
             execvp(*(e->argv),e->argv);
 
             //
-
 			printf("Commands are not yet implemented\n");
 			_exit(-1);
 
@@ -124,3 +135,4 @@ void exec_cmd(struct cmd* cmd) {
 		}
 	}
 }
+
