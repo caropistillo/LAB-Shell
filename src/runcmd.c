@@ -58,7 +58,7 @@ int run_cmd(char* cmd) {
 	}
 
 	// waits for the process to finish
-	waitpid(p, &status, 0);
+	else waitpid(p, &status, 0);
 	
 	print_status_info(parsed);
 	
