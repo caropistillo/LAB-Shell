@@ -39,7 +39,7 @@ static void set_environ_vars(char** eargv, int eargc) {
     {
         idx = block_contains(eargv[i],'=');
         key = (char*)malloc(i);
-        value = (char*)malloc(strlen(eargv)-i-1);
+        value = (char*)malloc(strlen(eargv[i])-i-1);
         get_environ_key(eargv[i],key);
         get_environ_value(eargv[i],value,idx);
         setenv(key,value,0);
@@ -92,7 +92,6 @@ void exec_cmd(struct cmd* cmd) {
                 set_environ_vars(e->eargv,e->eargc);
 
             execvp(*(e->argv),e->argv);
-
             //
 			printf("Commands are not yet implemented\n");
 			_exit(-1);
@@ -103,6 +102,10 @@ void exec_cmd(struct cmd* cmd) {
 			// runs a command in background
 			//
 			// Your code here
+			b = (struct backcmd*)cmd;
+			exec_cmd(b->c);
+			//
+
 			printf("Background process are not yet implemented\n");
 			_exit(-1);
 			break;
