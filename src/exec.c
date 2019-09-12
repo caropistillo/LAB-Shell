@@ -62,7 +62,14 @@ static void set_environ_vars(char** eargv, int eargc) {
 static int open_redir_fd(char* file, int flags) {
 
 	// Your code here
-	return -1;
+	//O_CREAT:if the specified file does not exist, it may be created by open().
+	//O_RDWR: Access mode -> read and write
+	//O_APPEND: Before each write(2), the file offset is positioned at the end of the file
+
+	int fd = open(file,flags,S_IWUSR|S_IRUSR);
+
+	return fd;
+	//return -1;
 }
 
 // executes a command - does not return
@@ -78,6 +85,7 @@ void exec_cmd(struct cmd* cmd) {
 	struct backcmd* b;
 	struct execcmd* r;
 	struct pipecmd* p;
+	int fd[3];
 
 	switch (cmd->type) {
 
@@ -119,6 +127,33 @@ void exec_cmd(struct cmd* cmd) {
 			// is greater than zero
 			//
 			// Your code here
+			r = (struct execcmd*)cmd;
+
+			if(strlen(r->out_file) > 0)
+			{
+				fd[0] = open_redir_fd(r->out_file,O_CREAT|O_RDWR|O_APPEND);
+				dup2(fd[0],STDOUT);
+			}
+			if(strlen(r->in_file) > 0)
+			{
+				fd[1] = open_redir_fd(r->in_file,O_CREAT|O_RDWR|O_APPEND);
+				dup2(fd[1],STDIN);
+			}
+			if(strlen(r->err_file) > 0)
+			{
+				if(block_contains(r->err_file,'&')==0 && block_contains(r->err_file,'1')==1)
+					dup2(fd[0],STDERR);
+
+				else
+				{
+					fd[2] = open_redir_fd(r->err_file,O_CREAT|O_RDWR|O_APPEND);
+					dup2(fd[2],STDERR);
+				}
+
+			}
+			execvp(*(r->argv),r->argv);
+
+			//
 			printf("Redirections are not yet implemented\n");
 			_exit(-1);
 			break;
@@ -138,4 +173,5 @@ void exec_cmd(struct cmd* cmd) {
 		}
 	}
 }
+
 

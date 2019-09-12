@@ -40,6 +40,11 @@
 #define READ 0
 #define WRITE 1
 
+// Fd for redir
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
 #define EXIT_SHELL 1
 
 #endif //DEFS_H
