@@ -227,24 +227,17 @@ struct cmd* parse_line(char* buf) {
 
 	p = pipe_cmd_create(parse_cmd(cmds[0]),parse_cmd(cmds[1]));
 
-	p = pipe_cmd_create(p,parse_cmd(cmds[2]));
-
-	/*
-	for(int j = 2;j<i;j++)
+	for(int j=2;j<i+2;j++)
 	{
-		p = pipe_cmd_create(p,parse_cmd(cmds[i]));
-	}*/
+		p = pipe_cmd_create(p,parse_cmd(cmds[j]));
+	}
+
+	for (int k = 0; k < MAXARGS; k++)
+	{
+	    free(cmds[k]);
+	}
+
 
 	return p;
-/*
-
-		struct cmd *r, *l;
-
-		char* right = split_line(buf, '|');
-
-		l = parse_cmd(buf);
-		r = parse_cmd(right);
-
-		return pipe_cmd_create(l, r);*/
 
 }
