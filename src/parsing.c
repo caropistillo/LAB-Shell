@@ -201,12 +201,50 @@ static struct cmd* parse_cmd(char* buf_cmd) {
 // looking for the pipe character '|'
 struct cmd* parse_line(char* buf) {
 
-	struct cmd *r, *l;
+	int i = 0;
+	char* cmds[MAXARGS];
 
-	char* right = split_line(buf, '|');
+	for (int k = 0; k < MAXARGS; k++)
+	{
+	    cmds[k] = malloc(ARGSIZE);
+	}
 
-	l = parse_cmd(buf);
-	r = parse_cmd(right);
+	struct cmd* p;
 
-	return pipe_cmd_create(l, r);
+	char* right = split_line(buf,'|');
+
+	strcpy(cmds[i],buf);
+
+	while(block_contains(right,'|')!=-1)
+	{
+		i++;
+		strcpy(buf,right);
+		right = split_line(buf,'|');
+		strcpy(cmds[i],buf);
+	}
+
+	strcpy(cmds[i+1],right);
+
+	p = pipe_cmd_create(parse_cmd(cmds[0]),parse_cmd(cmds[1]));
+
+	p = pipe_cmd_create(p,parse_cmd(cmds[2]));
+
+	/*
+	for(int j = 2;j<i;j++)
+	{
+		p = pipe_cmd_create(p,parse_cmd(cmds[i]));
+	}*/
+
+	return p;
+/*
+
+		struct cmd *r, *l;
+
+		char* right = split_line(buf, '|');
+
+		l = parse_cmd(buf);
+		r = parse_cmd(right);
+
+		return pipe_cmd_create(l, r);*/
+
 }
