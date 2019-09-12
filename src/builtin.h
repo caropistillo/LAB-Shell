@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "utils.h"
+#include "runcmd.h"
 
 
 extern char promt[PRMTLEN];

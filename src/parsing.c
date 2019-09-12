@@ -1,4 +1,5 @@
 #include "parsing.h"
+#include "runcmd.h"
 
 // parses an argument of the command stream input
 static char* get_token(char* buf, int idx) {
@@ -101,11 +102,17 @@ static char* expand_environ_var(char* arg) {
 
 	// Your code here
 
+	char* magicVariable = "?";
     if(block_contains(arg,'$') == 0)
     {
         strcpy(arg,&(arg[1])); //le saco el '$'
 
-        if(strlen(getenv(arg)) > ARGSIZE)
+        if(strcmp(arg,magicVariable)==0)
+        {
+        	sprintf(arg, "%d", status);
+        }
+
+        else if(strlen(getenv(arg)) > ARGSIZE)
         {
             arg = (char*)realloc(arg,strlen(getenv(arg)));
         }
@@ -203,4 +210,3 @@ struct cmd* parse_line(char* buf) {
 
 	return pipe_cmd_create(l, r);
 }
-

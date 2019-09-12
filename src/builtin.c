@@ -42,7 +42,10 @@ int cd(char* cmd) {
         if(strlen(directory)!=0)
         {
             if(chdir(directory)!=0)
+            {
                 printf("cd: %s: No existe el archivo o el directorio\n",directory);
+                status = 1;
+            }
             else
             {
                 newpromt = (char*)malloc(strlen(directory)+2);
