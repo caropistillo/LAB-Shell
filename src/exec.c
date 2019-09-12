@@ -62,9 +62,6 @@ static void set_environ_vars(char** eargv, int eargc) {
 static int open_redir_fd(char* file, int flags) {
 
 	// Your code here
-	//O_CREAT:if the specified file does not exist, it may be created by open().
-	//O_RDWR: Access mode -> read and write
-	//O_APPEND: Before each write(2), the file offset is positioned at the end of the file
 
 	int fd = open(file,flags,S_IWUSR|S_IRUSR);
 
@@ -132,26 +129,31 @@ void exec_cmd(struct cmd* cmd) {
 			if(strlen(r->out_file) > 0)
 			{
 				fd[0] = open_redir_fd(r->out_file,O_CREAT|O_RDWR|O_APPEND);
-				dup2(fd[0],STDOUT);
+				dup2(fd[0],STDOUT); //lo que iba a imprimirse en pantalla se imprime en un archivo de out
 			}
 			if(strlen(r->in_file) > 0)
 			{
 				fd[1] = open_redir_fd(r->in_file,O_CREAT|O_RDWR|O_APPEND);
-				dup2(fd[1],STDIN);
+				dup2(fd[1],STDIN); //uso el archivo como entrada
 			}
 			if(strlen(r->err_file) > 0)
 			{
 				if(block_contains(r->err_file,'&')==0 && block_contains(r->err_file,'1')==1)
-					dup2(fd[0],STDERR);
+					dup2(fd[0],STDERR); //lo que iba a imprimirse en pantalla se imprime en el mismo archivo que el out
 
 				else
 				{
 					fd[2] = open_redir_fd(r->err_file,O_CREAT|O_RDWR|O_APPEND);
-					dup2(fd[2],STDERR);
+					dup2(fd[2],STDERR); //lo que iba a imprimirse en pantalla se imprime en un archivo de err
 				}
 
 			}
 			execvp(*(r->argv),r->argv);
+
+			for(int i=0;i<3;i++)
+			{
+				close(fd[i]);
+			}
 
 			//
 			printf("Redirections are not yet implemented\n");
@@ -163,6 +165,35 @@ void exec_cmd(struct cmd* cmd) {
 			// pipes two commands
 			//
 			// Your code here
+
+			int pipefd[2]; //={readEnd,writeEnd}
+
+			if (pipe(pipefd) == -1)
+			{
+				perror("pipe");
+				exit(EXIT_FAILURE);
+			}
+
+			int rc = fork();
+
+			p = (struct pipecmd*) cmd;
+
+		    if (rc == -1)
+		    {
+			    perror("fork");
+			    exit(EXIT_FAILURE);
+		    }
+
+		    if (rc == 0) {    /* Child reads from pipe */
+			    close(pipefd[1]);          /* Close unused write end */
+			    dup2(pipefd[0],STDIN); //STDIN para leer
+			    exec_cmd(p->rightcmd);
+		    } else {            /* Parent writes argv[1] to pipe */
+			   close(pipefd[0]);          /* Close unused read end */
+			   dup2(pipefd[1],STDOUT);//STDOUT para escribir
+			   exec_cmd(p->leftcmd);
+		    }
+
 			printf("Pipes are not yet implemented\n");
 
 			// free the memory allocated
