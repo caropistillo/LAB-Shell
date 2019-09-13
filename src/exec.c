@@ -128,12 +128,12 @@ void exec_cmd(struct cmd* cmd) {
 
 			if(strlen(r->out_file) > 0)
 			{
-				fd[0] = open_redir_fd(r->out_file,O_CREAT|O_RDWR|O_APPEND);
+				fd[0] = open_redir_fd(r->out_file,O_CREAT|O_RDWR|O_TRUNC);
 				dup2(fd[0],STDOUT); //lo que iba a imprimirse en pantalla se imprime en un archivo de out
 			}
 			if(strlen(r->in_file) > 0)
 			{
-				fd[1] = open_redir_fd(r->in_file,O_CREAT|O_RDWR|O_APPEND);
+				fd[1] = open_redir_fd(r->in_file,O_CREAT|O_RDWR|O_TRUNC);
 				dup2(fd[1],STDIN); //uso el archivo como entrada
 			}
 			if(strlen(r->err_file) > 0)
@@ -143,7 +143,7 @@ void exec_cmd(struct cmd* cmd) {
 
 				else
 				{
-					fd[2] = open_redir_fd(r->err_file,O_CREAT|O_RDWR|O_APPEND);
+					fd[2] = open_redir_fd(r->err_file,O_CREAT|O_RDWR|O_TRUNC);
 					dup2(fd[2],STDERR); //lo que iba a imprimirse en pantalla se imprime en un archivo de err
 				}
 
