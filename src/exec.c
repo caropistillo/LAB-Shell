@@ -174,31 +174,43 @@ void exec_cmd(struct cmd* cmd) {
 				exit(EXIT_FAILURE);
 			}
 
-			int rc = fork();
+			int pidLeft;
+			int pidRight;
 
 			p = (struct pipecmd*) cmd;
 
-		    if (rc == -1)
-		    {
-			    perror("fork");
-			    exit(EXIT_FAILURE);
-		    }
 
-		    if (rc == 0) {    /* Child reads from pipe */
-			    close(pipefd[1]);          /* Close unused write end */
-			    dup2(pipefd[0],STDIN); //STDIN para leer
-			    exec_cmd(p->rightcmd);
-		    } else {            /* Parent writes argv[1] to pipe */
-			   close(pipefd[0]);          /* Close unused read end */
-			   dup2(pipefd[1],STDOUT);//STDOUT para escribir
-			   exec_cmd(p->leftcmd);
+		    if((pidLeft=fork())==0)
+		    {
+		    	close(pipefd[0]);          // Close unused read end
+			    dup2(pipefd[1],STDOUT);//STDOUT para escribir
+			    exec_cmd(p->leftcmd);
+			    _exit(0);
+		    }
+		    else
+		    {
+		    	if((pidRight=fork())==0)
+		    	{
+				    close(pipefd[1]);          // Close unused write end
+				    dup2(pipefd[0],STDIN); //STDIN para leer
+				    exec_cmd(p->rightcmd);
+				    _exit(0);
+		    	}
+
+		    	else
+		    	{
+		    		waitpid(-1,NULL,0);
+		    		close(pipefd[0]);
+		    		close(pipefd[1]);
+		    		// free the memory allocated
+		    		// for the pipe tree structure
+		    		free_command(parsed_pipe);
+		    		_exit(0);
+
+		    	}
 		    }
 
 			printf("Pipes are not yet implemented\n");
-
-			// free the memory allocated
-			// for the pipe tree structure
-			free_command(parsed_pipe);
 
 			break;
 		}
